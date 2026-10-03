@@ -87,6 +87,7 @@ input,textarea{font-size:16px}
 .fld output{font-variant-numeric:tabular-nums;font-weight:800;color:var(--ink2)}.fld output.full{color:#b3541a}
 .fld input,.fld textarea{width:100%;padding:13px 15px;border:0;border-radius:16px;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--line);font-family:inherit;color:var(--ink);resize:none;transition:box-shadow .2s}
 .fld input:focus,.fld textarea:focus{outline:0;box-shadow:inset 0 0 0 2px var(--lime)}
+input[type=range]{display:block;width:100%;height:30px;accent-color:var(--moss);touch-action:pan-y;cursor:pointer}
 .dd{position:relative}
 .ddb{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:10px 16px;border-radius:18px;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--line);text-align:left}
 .ddb[aria-expanded=true]{box-shadow:inset 0 0 0 2px var(--lime)}.ddb[aria-expanded=true] svg{transform:rotate(180deg)}
@@ -148,6 +149,9 @@ input,textarea{font-size:16px}
 <section class="st"><h2>Tipografía<small id="fl"></small></h2>
 <div class="dd" id="dd"><button class="ddb" id="ddb" aria-haspopup="listbox" aria-expanded="false" aria-label="Elegir tipografía"><span class="ddv" id="ddv"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><ul class="ddl" id="ddl" role="listbox" hidden></ul></div>
 <div class="warn" id="wn" hidden></div></section>
+<section class="st"><h2>Tamaño de letra<small>Al máximo se ajusta al cuero</small></h2>
+<label class="fld"><span>Nombre<output id="z1"></output></span><input type="range" id="rN" min="30" max="100" step="1"></label>
+<label class="fld"><span>Frase<output id="z2"></output></span><input type="range" id="rP" min="30" max="100" step="1"></label></section>
 <section class="st"><h2>Posición<small id="pl"></small></h2><div class="pos" id="pos" role="group" aria-label="Posición del texto"></div></section>
 <section class="st"><h2>Acabado del grabado</h2><div class="fins" id="fins"></div></section>
 <div class="cta"><button class="go" id="go"><span>Consultar por WhatsApp<small id="gs"></small></span><i><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></i></button></div>
@@ -159,7 +163,7 @@ const $=id=>document.getElementById(id);
 const TX=[['nl','Negro','Liso'],['np','Negro','Poroso'],['ml','Marrón','Liso'],['mp','Marrón','Poroso']];
 const FIN=[['nat','Natural'],['oro','Dorado'],['plata','Plateado'],['azul','Azul'],['rojo','Rojo']];
 const VN=['Arriba','Centro','Abajo'],HN=['Izquierda','Centro','Derecha'],JC=['flex-start','center','flex-end'],TA=['left','center','right'];
-const S={nm:'Andrea Vega',ph:'Para siempre contigo',k:'nl',fin:'nat',f:0,v:1,h:1};
+const S={nm:'Andrea Vega',ph:'Para siempre contigo',k:'nl',fin:'nat',f:0,v:1,h:1,sn:80,sp:100};
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nm=()=>S.nm.trim()||'Tu nombre';
 const miss=f=>[...new Set([...(S.nm+S.ph)].filter(c=>c.trim()&&!f.s.includes(c)))];
@@ -167,9 +171,9 @@ const posL=()=>S.v===1&&S.h===1?'Centro':VN[S.v]+(S.h===1?'':', '+HN[S.h].toLowe
 const tx=()=>TX.find(t=>t[0]===S.k);
 
 function fit(){const P=$('piece'),n=$('nm'),p=$('ph'),W=P.clientWidth*.84,H=P.clientHeight*.82;if(!W)return;
- n.style.fontSize='100px';const a=Math.min(100*W/n.offsetWidth,P.clientHeight*.3);n.style.fontSize=a+'px';
- if(!p.hidden){let b=Math.min(a*.5,P.clientWidth*.075);p.style.fontSize=b+'px';
-  for(let i=0;i<16&&n.offsetHeight+p.offsetHeight>H&&b>5;i++){b*=.92;p.style.fontSize=b+'px'}}}
+ n.style.fontSize='100px';const m=Math.min(100*W/n.offsetWidth,P.clientHeight*.3),a=m*S.sn/100;n.style.fontSize=a+'px';
+ if(!p.hidden){let b=Math.min(m*.5,P.clientWidth*.075)*S.sp/100;p.style.fontSize=b+'px';
+  for(let i=0;i<20&&n.offsetHeight+p.offsetHeight>H&&b>5;i++){b*=.92;p.style.fontSize=b+'px'}}}
 function stage(){const f=FONTS[S.f],B=$('blk'),c=S.fin==='nat'?'eng nat':'eng met '+S.fin;
  $('piece').dataset.k=S.k;B.style.cssText=`justify-content:${JC[S.v]};align-items:${JC[S.h]};text-align:${TA[S.h]};font-family:'${f.f}',serif`;
  $('nm').className=c;$('ph').className=c+' ph';$('nm').textContent=nm();$('ph').textContent=S.ph.trim();$('ph').hidden=!S.ph.trim();fit()}
@@ -179,7 +183,7 @@ function posg(){let h='';for(let v=0;v<3;v++)for(let x=0;x<3;x++){const on=v===S
 function dd(){const f=FONTS[S.f],t=esc(nm());$('ddv').innerHTML=`<span class="pv" style="font-family:'${f.f}',serif">${t}</span><small>${f.n}</small>`;$('fl').textContent=FONTS.length+' disponibles';
  $('ddl').innerHTML=FONTS.map((x,i)=>`<li role="option" data-i="${i}" aria-selected="${i===S.f}"><span class="pv" style="font-family:'${x.f}',serif">${t}</span><small>${x.n}</small></li>`).join('');
  const m=miss(f);$('wn').hidden=!m.length;$('wn').textContent=m.length?`Esta tipografía no incluye ${m.join(' ')}. Elige otra si necesitas esos caracteres.`:''}
-function meta(){$('c1').textContent=S.nm.length+'/20';$('c1').className=S.nm.length>=20?'full':'';$('c2').textContent=S.ph.length+'/120';$('c2').className=S.ph.length>=120?'full':'';
+function meta(){$('z1').textContent=S.sn+'%';$('z2').textContent=S.sp+'%';$('rP').disabled=!S.ph.trim();$('c1').textContent=S.nm.length+'/20';$('c1').className=S.nm.length>=20?'full':'';$('c2').textContent=S.ph.length+'/120';$('c2').className=S.ph.length>=120?'full':'';
  $('gs').textContent=`${tx()[1]} ${tx()[2].toLowerCase()}, ${FIN.find(x=>x[0]===S.fin)[1].toLowerCase()}, ${posL().toLowerCase()}`}
 const all=()=>{tiles();fins();posg();dd();meta();stage()};
 const open=o=>{$('ddl').hidden=!o;$('ddb').setAttribute('aria-expanded',o);if(o)$('ddl').querySelector('[aria-selected=true]').scrollIntoView({block:'nearest'})};
@@ -189,17 +193,25 @@ $('fins').onclick=e=>{const b=e.target.closest('.fin');if(b){S.fin=b.dataset.v;f
 $('pos').onclick=e=>{const b=e.target.closest('.pp');if(b){S.v=+b.dataset.v;S.h=+b.dataset.h;posg();meta();stage()}};
 $('inN').oninput=e=>{S.nm=e.target.value;dd();meta();stage()};
 $('inP').oninput=e=>{const v=e.target.value.replace(/\s*\n\s*/g,' ');if(v!==e.target.value)e.target.value=v;S.ph=v;dd();meta();stage()};
+$('rN').oninput=e=>{S.sn=+e.target.value;meta();fit()};
+$('rP').oninput=e=>{S.sp=+e.target.value;meta();fit()};
 $('ddb').onclick=()=>open($('ddl').hidden);
 $('ddl').onclick=e=>{const l=e.target.closest('li');if(l){S.f=+l.dataset.i;dd();stage();open(false)}};
 $('ddb').onkeydown=e=>{if(e.key==='Escape')open(false);else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();S.f=(S.f+(e.key==='ArrowDown'?1:FONTS.length-1))%FONTS.length;const o=!$('ddl').hidden;dd();stage();if(o)open(true)}};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#dd'))open(false)});
-$('go').onclick=()=>{const f=FONTS[S.f],t=[`Hola, me interesa un grabado láser.`,`Nombre: ${nm()}`];if(S.ph.trim())t.push(`Frase: ${S.ph.trim()}`);
- t.push(`Tipografía: ${f.n}`,`Cuero: ${tx()[1]} ${tx()[2].toLowerCase()}`,`Grabado: ${FIN.find(x=>x[0]===S.fin)[1].toLowerCase()}`,`Posición: ${posL().toLowerCase()}`);
- open('https://wa.me/51912472560?text='+encodeURIComponent(t.join('\n')),'_blank')};
+$('go').onclick=()=>{const f=FONTS[S.f],m=miss(f),ph=S.ph.trim(),fn=FIN.find(x=>x[0]===S.fin)[1];
+ const L=['Hola Infinity Leather, quiero solicitar un grabado láser con este diseño:','',
+ `*Nombre:* ${S.nm.trim()||'(sin nombre)'}`,ph?`*Frase:* ${ph}`:'*Frase:* (sin frase)','',
+ `*Tipografía:* ${f.n}`,`*Cuero:* ${tx()[1]} ${tx()[2].toLowerCase()}`,`*Acabado del grabado:* ${fn}`,
+ `*Posición:* ${posL()}`,`*Tamaño de letra:* nombre ${S.sn}%${ph?', frase '+S.sp+'%':''}`];
+ if(m.length)L.push('',`Nota: la tipografía no incluye los caracteres ${m.join(' ')}.`);
+ L.push('','Quedo atento(a) a su confirmación. Gracias.');
+ const u='https://wa.me/51912472560?text='+encodeURIComponent(L.join('\n'));
+ const w=window.open(u,'_blank');if(!w)location.href=u};
 if(matchMedia('(hover:hover) and (pointer:fine)').matches){const st=$('stage'),P=$('piece');
  st.onpointermove=e=>{const r=st.getBoundingClientRect();P.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*9+'deg');P.style.setProperty('--rx',(-((e.clientY-r.top)/r.height-.5))*7+'deg')};
  st.onpointerleave=()=>{P.style.setProperty('--rx','0deg');P.style.setProperty('--ry','0deg')}}
-$('inN').value=S.nm;$('inP').value=S.ph;$('yr').textContent=new Date().getFullYear();all();
+$('rN').value=S.sn;$('rP').value=S.sp;$('inN').value=S.nm;$('inP').value=S.ph;$('yr').textContent=new Date().getFullYear();all();
 new ResizeObserver(fit).observe($('piece'));
 Promise.all(FONTS.map(f=>document.fonts.load(`48px "${f.f}"`))).then(fit);
 </script>
